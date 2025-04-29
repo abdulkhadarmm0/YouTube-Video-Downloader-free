@@ -9,6 +9,8 @@ os.makedirs(DOWNLOAD_DIR, exist_ok=True)
 
 @app.route('/', methods=['GET', 'POST'])
 def index():
+    download_file = None
+
     if request.method == 'POST':
         url = request.form['url']
         quality = request.form['quality']
@@ -25,14 +27,23 @@ def index():
 
         try:
             with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-                ydl.download([url])
+                info_dict = ydl.extract_info(url, download=True)
+                video_title = info_dict.get('title', None)
+                video_filename = f"{video_title}.mp4"  # Assuming mp4 is the downloaded format
+                download_file = video_filename
             flash("Download and merge complete.", "success")
         except Exception as e:
             flash(f"Error: {str(e)}", "danger")
 
         return redirect(url_for('index'))
 
-    return render_template('index.html')
+    return render_template('index.html', download_file=download_file)
+
+
+@app.route('/download/<filename>')
+def download(filename):
+    return send_from_directory(DOWNLOAD_DIR, filename, as_attachment=True)
+
 
 if __name__ == '__main__':
     app.run(debug=True)
