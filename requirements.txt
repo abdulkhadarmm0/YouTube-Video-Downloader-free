@@ -1,2 +1,2 @@
-Flask
-yt-dlp
+Flask==2.0.2
+yt-dlp==2023.4.0
